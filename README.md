@@ -7,6 +7,7 @@ Follow this guide https://realpython.com/how-to-make-a-discord-bot-python/ and c
 ### !add
 #### Required parameters
 * date+hour - format dd.mm.yy-HH:MM, example 10.02.21-13:32 
+* date+hour - secondary format now+10(s/m/h/d/w). Example now+1w - means a week from now.
 #### Optional parameters
 * -r - Is the reminder recurring? By default False.
 * -i - Interval between reminders. Possible intervals (d)ay, (h)our, (m)inute. Example 1d.
