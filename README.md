@@ -2,7 +2,7 @@
 ### How to add already running bot?
 Use this link https://discord.com/api/oauth2/authorize?client_id=831147000032395284&permissions=76800&scope=bot to add this bot to your channel.
 ### How to run it myself?
-Follow this guide https://realpython.com/how-to-make-a-discord-bot-python/
+Follow this guide https://realpython.com/how-to-make-a-discord-bot-python/ and create a file called token with the token.
 ## Commands
 ### !add
 #### Required parameters

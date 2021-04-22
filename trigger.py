@@ -16,16 +16,18 @@ class Trigger:
         if "date+hour" in args:
             for i in range(len(args)):
                 if args[i].lower() == "date+hour":
-                    self.nextEvent = datetime.datetime.strptime(args[i+1],"%d.%m.%y-%H:%M")
+                    if "now" in args[i+1]:
+                        splitted = args[i+1].split("+")
+                        self.nextEvent = datetime.datetime.now()
+                        if len(splitted) > 1:
+                            delta = Trigger.getTimeDeltaFromString(splitted[1])
+                            self.nextEvent = datetime.datetime.now()+delta
+                    else:
+                        self.nextEvent = datetime.datetime.strptime(args[i+1],"%d.%m.%y-%H:%M")
                 if args[i].lower() == "-r":
                     self.recurring = True
                 if args[i].lower() == "-i":
-                    if "m" in args[i+1].lower():
-                        self._inc = datetime.timedelta(minutes=int(args[i+1].lower().replace("m","")))
-                    if "d" in args[i + 1].lower():
-                        self._inc = datetime.timedelta(days=int(args[i + 1].lower().replace("d", "")))
-                    if "w" in args[i + 1].lower():
-                        self._inc = datetime.timedelta(weeks=int(args[i + 1].lower().replace("w", "")))
+                    self._inc = Trigger.getTimeDeltaFromString(args[i+1])
                 if args[i].lower() == "-m":
                     self.msg=args[i+1]
         else:
@@ -33,6 +35,20 @@ class Trigger:
 
     def __str__(self):
         return "Next event takes place: {}, Is recurring: {}, Reccuring in: {}.\nMSG: {}".format(self.nextEvent,self.recurring,self._inc,self.msg)
+
+    @staticmethod
+    def getTimeDeltaFromString(str):
+        if "s" in str.lower():
+            return datetime.timedelta(seconds=int(str.lower().replace("s", "")))
+        if "m" in str.lower():
+            return datetime.timedelta(minutes=int(str.lower().replace("m", "")))
+        if "h" in str.lower():
+            return datetime.timedelta(hours=int(str.lower().replace("h", "")))
+        if "d" in str.lower():
+            return datetime.timedelta(days=int(str.lower().replace("d", "")))
+        if "w" in str.lower():
+            return datetime.timedelta(weeks=int(str.lower().replace("w", "")))
+
 
     async def trigger(self,ctx):
         await ctx.send(self.msg)

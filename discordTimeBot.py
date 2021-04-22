@@ -1,10 +1,9 @@
-import discord
 from discord.ext import commands
-import time
-import datetime
 import logging
 import asyncio
 from trigger import Trigger
+import settings
+import sys
 
 class ReminderController:
     reminderContexts = []
@@ -22,7 +21,7 @@ class ReminderController:
             logging.info("Reminder Controller doing scan. ")
             for rs in ReminderController.reminderContexts:
                 await rs.checkTriggers()
-            await asyncio.sleep(60)
+            await asyncio.sleep(settings.REFRESH_RATE)
     @staticmethod
     def getListForUid(uid:int):
         for rs in ReminderController.reminderContexts:
@@ -64,8 +63,8 @@ class ReminderSender:
                 self.triggers.remove(trigger)
 
 
-logging.basicConfig(filename='bot.log', encoding='utf-8', level=logging.DEBUG)
-token = str( open("token","r").readline() ).replace("\n","")
+logging.basicConfig(filename='bot.log', level=logging.DEBUG)
+token = sys.argv[1]
 bot = commands.Bot(command_prefix='!')
 channel = None
 
@@ -73,14 +72,13 @@ channel = None
 async def on_ready():
     logging.info("Bot connected.")
 
-@bot.command(name="add",help="Adds new reminder or recurring reminder. Use format date+hour dd.mm.yy-HH:MM with optional "
+@bot.command(name="add",help="Adds new reminder or recurring reminder. Use format date+hour dd.mm.yy-HH:MM (or now+(1-60)(s/m/h/d/w)) with optional "
                              "parameters: \n-r recurring \n-i interval of reccuring (ex. 1d = 1 day) - "
-                             "possible intervals (d)ay, (h)our, (m)inute\n-m Message to send.\nExample command: "
+                             "possible intervals (s)econds, (w)eeks, (d)ay, (h)our, (m)inute\n-m Message to send.\nExample command: "
                              "!add date+hour 10.01.21-10:21 -m Sample msg -r -i 1m\nExample command will send message"
                              " 'Sample msg' every minute starting from the given date and hour.")
 async def add(ctx,*args):
     logging.info("Received remainder.{}".format(args))
-    #tr = Trigger(datetime.datetime.now()+datetime.timedelta(seconds=5),False,datetime.timedelta(seconds=5),"WOOW IT WORKS")
     try:
         tr = Trigger(args)
     except:
@@ -89,9 +87,13 @@ async def add(ctx,*args):
         return
     ReminderController.addReminderContext(ctx.channel.id, ctx, tr)
     await ctx.send("Understood sire. I'll remind you "+str(tr))
+
+
 @bot.command(name="list",help="Lists all of the remembered reminders.")
 async def list(ctx):
     await ctx.send(ReminderController.getListForUid(ctx.channel.id))
+
+
 @bot.command(name="delete",help="Deletes one reminder specified by the ID. To obtain ID list all of the reminders - "
                                 "the id will be at the beginning of the line ([id] <reminder data>")
 async def delete(ctx, id):
